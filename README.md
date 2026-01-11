@@ -1,59 +1,75 @@
-# MemeGaleFront
+# MemeGale Front 🌪️
 
-This project was generated using [Angular CLI](https://github.com/angular/angular-cli) version 20.3.2.
+Frontend de l'application **MemeGale**, développé avec **Angular 19** et **TailwindCSS**.
+Ce projet permet aux utilisateurs de partager, liker et commenter des mèmes dans une interface moderne et réactive.
 
-## Development server
+## 🚀 Fonctionnalités Clés
 
-To start a local development server, run:
+- **Authentification** : Connexion/Inscription (Email + Google OAuth).
+- **Galerie de Mèmes** : Infinite Scroll, Filtres (Popularité, Date, Alphabétique), Recherche avec Meilisearch.
+- **Interactions** : Likes avec animations (WebSockets temps réel), partages.
+- **Profil Utilisateur** : Statistiques (Likes, Vues), Édition de profil (Avatar), Dark Mode.
+- **UX/UI** : Skeleton loaders, Responsive Design, Thèmes dynamiques.
+
+## 🛠️ Stack Technique
+
+- **Framework** : Angular 19 (Standalone Components, Signals)
+- **Styling** : TailwindCSS + CSS Variables (Dark mode)
+- **State Management** : RxJS + Angular Signals
+- **Backend** : Directus (CMS Headless)
+- **Temps Réel** : WebSockets (Directus)
+
+## 📦 Installation
+
+### Prérequis
+
+- Node.js (v18+)
+- npm ou bun
+- Angular CLI (`npm install -g @angular/cli`)
+
+### Étapes
+
+1. Cloner le projet :
+
+   ```bash
+   git clone <url_repo>
+   cd meme-gale-front
+   ```
+
+2. Installer les dépendances :
+
+   ```bash
+   npm install
+   ```
+
+3. Configurer l'environnement :
+   Vérifiez `src/environments/environment.ts` pour l'URL du backend Directus (par défaut `http://localhost:8055`).
+
+## 🏃‍♂️ Démarrage
+
+Lancer le serveur de développement :
 
 ```bash
 ng serve
 ```
 
-Once the server is running, open your browser and navigate to `http://localhost:4200/`. The application will automatically reload whenever you modify any of the source files.
+Accédez à l'application sur `http://localhost:4200`.
 
-## Code scaffolding
+## 🏗️ Structure du Projet
 
-Angular CLI includes powerful code scaffolding tools. To generate a new component, run:
+- `src/app/pages` : Composants de pages (Gallery, Login, Profile, etc.)
+- `src/app/shared` :
+  - `components` : Composants réutilisables (Navbar, Cards, Modals)
+  - `services` : Logique métier (Auth, Meme, WebSocket)
+  - `guards` : Protection des routes
+  - `interfaces` : Types TypeScript
 
-```bash
-ng generate component component-name
-```
+## 📝 Évaluation (R505)
 
-For a complete list of available schematics (such as `components`, `directives`, or `pipes`), run:
+Ce projet respecte les critères suivants :
 
-```bash
-ng generate --help
-```
-
-## Building
-
-To build the project run:
-
-```bash
-ng build
-```
-
-This will compile your project and store the build artifacts in the `dist/` directory. By default, the production build optimizes your application for performance and speed.
-
-## Running unit tests
-
-To execute unit tests with the [Karma](https://karma-runner.github.io) test runner, use the following command:
-
-```bash
-ng test
-```
-
-## Running end-to-end tests
-
-For end-to-end (e2e) testing, run:
-
-```bash
-ng e2e
-```
-
-Angular CLI does not come with an end-to-end testing framework by default. You can choose one that suits your needs.
-
-## Additional Resources
-
-For more information on using the Angular CLI, including detailed command references, visit the [Angular CLI Overview and Command Reference](https://angular.dev/tools/cli) page.
+- ✅ **Composants/Services** : Architecture modulaire et propre.
+- ✅ **Typage** : Interfaces strictes pour toutes les données.
+- ✅ **Tailwind** : Utilisé pour tout le styling.
+- ✅ **WebSockets** : Notifications et mises à jour en temps réel.
+- **Git** : Historique propre et commits conventionnels.

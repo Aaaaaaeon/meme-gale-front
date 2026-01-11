@@ -1,5 +1,6 @@
 import { Component, OnInit, OnDestroy, AfterViewInit, ViewChild, ElementRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { FormsModule } from '@angular/forms';
 import { RouterModule, Router } from '@angular/router';
 import { MemeService } from '../../shared/services/meme.service';
 import { AuthService } from '../../shared/services/auth.service';
@@ -8,11 +9,12 @@ import { Meme } from '../../shared/interfaces/meme.interface';
 import { NotificationBellComponent } from '../../shared/components/notification-bell/notification-bell.component';
 import { ThemeToggleComponent } from '../../shared/components/theme-toggle/theme-toggle.component';
 import { SkeletonCardComponent } from '../../shared/components/skeleton-card/skeleton-card.component';
+import { SearchBarComponent } from '../../shared/components/search-bar/search-bar.component';
 
 @Component({
   selector: 'app-meme-galery',
   standalone: true,
-  imports: [CommonModule, RouterModule, NotificationBellComponent, ThemeToggleComponent, SkeletonCardComponent],
+  imports: [CommonModule, FormsModule, RouterModule, NotificationBellComponent, ThemeToggleComponent, SkeletonCardComponent, SearchBarComponent],
   template: `
     <!-- Professional Header -->
     <header class="bg-[var(--color-bg)] border-b border-[var(--color-border)] sticky top-0 z-50">
@@ -26,6 +28,11 @@ import { SkeletonCardComponent } from '../../shared/components/skeleton-card/ske
                 <a routerLink="/profile" class="text-sm font-medium text-gray-600 hover:text-gray-900">Mon Profil</a>
               }
             </nav>
+          </div>
+          
+          <!-- Search Bar -->
+          <div class="hidden md:block flex-1 max-w-md mx-4">
+            <app-search-bar />
           </div>
           
           <div class="flex items-center gap-3">
@@ -49,9 +56,24 @@ import { SkeletonCardComponent } from '../../shared/components/skeleton-card/ske
     <!-- Main Content -->
     <main class="container-custom py-8">
       <!-- Hero Section -->
-      <div class="text-center mb-12">
+      <div class="text-center mb-8">
         <h2 class="text-4xl font-bold text-gray-900 mb-3">Découvrez des mèmes incroyables</h2>
-        <p class="text-lg text-gray-600">Partagez des rires avec la communauté</p>
+        <p class="text-lg text-gray-600 mb-6">Partagez des rires avec la communauté</p>
+        
+        <!-- Sort Filter -->
+        <div class="flex justify-center">
+          <div class="inline-flex items-center gap-2 bg-[var(--color-bg)] border border-[var(--color-border)] rounded-lg px-4 py-2">
+            <label class="text-sm text-gray-600">Trier par :</label>
+            <select 
+              [(ngModel)]="sortOption" 
+              (change)="onSortChange()"
+              class="bg-transparent text-sm font-medium text-gray-900 focus:outline-none cursor-pointer">
+              <option value="-likes">Popularité</option>
+              <option value="-date_created">Date de publication</option>
+              <option value="title">Ordre alphabétique</option>
+            </select>
+          </div>
+        </div>
       </div>
 
       <!-- Loading State (Skeleton) -->
@@ -181,6 +203,7 @@ export class MemeGaleryComponent implements OnInit, AfterViewInit, OnDestroy {
   hasMore = true;
   currentOffset = 0;
   limit = 20;
+  sortOption = '-likes'; // Default: popularity
   private intersectionObserver?: IntersectionObserver;
 
   constructor(
@@ -221,11 +244,20 @@ export class MemeGaleryComponent implements OnInit, AfterViewInit, OnDestroy {
     return this.authService.isAuthenticated();
   }
 
+  onSortChange(): void {
+    // Reset and reload with new sort
+    this.memes = [];
+    this.currentOffset = 0;
+    this.hasMore = true;
+    this.loadMemes();
+  }
+
   loadMemes(): void {
     this.loading = true;
     this.memeService.getMemes({
       limit: this.limit,
-      offset: this.currentOffset
+      offset: this.currentOffset,
+      sort: this.sortOption
     }).subscribe({
       next: (memes) => {
         this.memes.push(...memes);

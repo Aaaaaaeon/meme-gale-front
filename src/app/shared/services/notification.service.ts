@@ -1,8 +1,9 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { Observable, BehaviorSubject, timer, switchMap, map, shareReplay } from 'rxjs';
+import { Observable, BehaviorSubject, timer, map } from 'rxjs';
 import { environment } from '../../../environments/environment';
 import { DirectusService } from './directus-service';
+import { WebsocketService } from './websocket.service';
 import { Notification } from '../interfaces/notification.interface';
 
 @Injectable({
@@ -17,11 +18,30 @@ export class NotificationService {
 
   constructor(
     private directus: DirectusService,
-    private http: HttpClient
+    private http: HttpClient,
+    private websocketService: WebsocketService
   ) {
+    this.initializeNotifications();
+  }
+
+  /**
+   * Initialize notifications with WebSocket support
+   */
+  private initializeNotifications(): void {
     this.refreshNotifications();
     
-    // Poll every minute
+    // Connect to WebSocket for real-time updates
+    this.websocketService.connect();
+    
+    // Listen for WebSocket messages
+    this.websocketService.messages$.subscribe((message) => {
+      if (message.type === 'subscription' && message.data) {
+        // New notification received via WebSocket
+        this.refreshNotifications();
+      }
+    });
+    
+    // Fallback polling every 60 seconds (in case WebSocket disconnects)
     timer(60000, 60000).subscribe(() => this.refreshNotifications());
   }
 
@@ -58,8 +78,6 @@ export class NotificationService {
     
     if (ids.length === 0) return new Observable(obs => { obs.next(); obs.complete(); });
 
-    // Batch update via directus items (if supported) or loop
-    // Directus supports batch update with keys
     return this.http.patch(`${environment.directusApiUrl}/notifications`, {
       keys: ids,
       data: { is_read: true }
@@ -75,3 +93,4 @@ export class NotificationService {
     this.unreadCountSubject.next(count);
   }
 }
+

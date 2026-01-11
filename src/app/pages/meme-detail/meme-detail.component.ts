@@ -58,9 +58,15 @@ import { ThemeToggleComponent } from '../../shared/components/theme-toggle/theme
                   
                   <div class="flex items-center gap-3 text-sm text-gray-500">
                     <div class="flex items-center gap-2">
-                      <div class="w-6 h-6 rounded-full bg-gray-200 flex items-center justify-center text-xs font-bold text-gray-600">
-                        {{ getAuthorInitial() }}
-                      </div>
+                      @if (getAuthorAvatar()) {
+                        <img [src]="memeService.getImageUrl(getAuthorAvatar()!)" 
+                             alt="Avatar" 
+                             class="w-8 h-8 rounded-full object-cover">
+                      } @else {
+                        <div class="w-8 h-8 rounded-full bg-primary text-white flex items-center justify-center text-sm font-bold">
+                          {{ getAuthorInitial() }}
+                        </div>
+                      }
                       <span class="font-medium text-gray-900">{{ getAuthorName() }}</span>
                     </div>
                     <span>•</span>
@@ -151,7 +157,7 @@ export class MemeDetailComponent implements OnInit {
   constructor(
     private route: ActivatedRoute,
     private router: Router,
-    private memeService: MemeService,
+    public memeService: MemeService,
     private authService: AuthService
   ) {}
 
@@ -234,6 +240,13 @@ export class MemeDetailComponent implements OnInit {
       return this.meme.user_created.first_name;
     }
     return 'Anonyme';
+  }
+
+  getAuthorAvatar(): string | null {
+    if (this.meme && typeof this.meme.user_created === 'object' && this.meme.user_created?.avatar) {
+      return this.meme.user_created.avatar;
+    }
+    return null;
   }
 
   goBack(): void {

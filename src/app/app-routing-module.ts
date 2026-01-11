@@ -16,6 +16,10 @@ export const routes: Routes = [
     loadComponent: () => import('./pages/login/login.component').then(m => m.LoginComponent)
   },
   {
+    path: 'auth/callback',
+    loadComponent: () => import('./pages/auth-callback/auth-callback.component').then(m => m.AuthCallbackComponent)
+  },
+  {
     path: 'gallery',
     loadComponent: () => import('./pages/meme-galery/meme-galery.component').then(m => m.MemeGaleryComponent)
   },
@@ -34,3 +38,4 @@ export const routes: Routes = [
     canActivate: [authGuard]
   }
 ];
+
