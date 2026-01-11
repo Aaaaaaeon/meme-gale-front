@@ -1,85 +1,115 @@
 import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
-import { Router } from '@angular/router';
+import { Router, RouterModule } from '@angular/router';
 import { MemeService } from '../../shared/services/meme.service';
 import { Tag } from '../../shared/interfaces/tag.interface';
 import { UploadZoneComponent } from '../../shared/components/upload-zone/upload-zone.component';
 
+import { NotificationBellComponent } from '../../shared/components/notification-bell/notification-bell.component';
+
 @Component({
   selector: 'app-create-meme',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, UploadZoneComponent],
+  imports: [CommonModule, ReactiveFormsModule, UploadZoneComponent, RouterModule, NotificationBellComponent],
   template: `
-    <div class="container mx-auto px-4 py-8 max-w-3xl">
-      <h1 class="text-4xl font-bold mb-8">Créer un meme</h1>
-
-      <form [formGroup]="memeForm" (ngSubmit)="onSubmit()">
-        <!-- Upload Zone -->
-        <div class="mb-6">
-          <label class="label">
-            <span class="label-text text-lg font-semibold">Image *</span>
-          </label>
-          <app-upload-zone (fileSelected)="onFileSelected($event)" />
-          @if (memeForm.get('image')?.invalid && submitted) {
-            <label class="label">
-              <span class="label-text-alt text-error">Une image est requise</span>
-            </label>
-          }
-        </div>
-
-        <!-- Title -->
-        <div class="form-control mb-6">
-          <label class="label">
-            <span class="label-text text-lg font-semibold">Titre *</span>
-          </label>
-          <input type="text" 
-                 formControlName="title"
-                 placeholder="Titre de votre meme" 
-                 class="input input-bordered" />
-          @if (memeForm.get('title')?.invalid && submitted) {
-            <label class="label">
-              <span class="label-text-alt text-error">Le titre est requis</span>
-            </label>
-          }
-        </div>
-
-        <!-- Tags -->
-        <div class="form-control mb-6">
-          <label class="label">
-            <span class="label-text text-lg font-semibold">Tags</span>
-          </label>
-          <select multiple class="select select-bordered h-32" formControlName="tags">
-            @for (tag of availableTags; track tag.id) {
-              <option [value]="tag.id">{{ tag.name }}</option>
-            }
-          </select>
-          <label class="label">
-            <span class="label-text-alt">Maintenez Ctrl/Cmd pour sélectionner plusieurs tags</span>
-          </label>
-        </div>
-
-        <!-- Error Message -->
-        @if (errorMessage) {
-          <div class="alert alert-error mb-6">
-            <span>{{ errorMessage }}</span>
+    <!-- Header -->
+    <header class="bg-white border-b border-gray-200 sticky top-0 z-50">
+      <div class="container-custom py-4">
+        <div class="flex items-center justify-between">
+          <div class="flex items-center gap-4">
+            <a routerLink="/gallery" class="btn-custom btn-secondary !px-3">
+              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"/>
+              </svg>
+            </a>
+            <h1 class="text-xl font-bold text-gray-900">Créer un mème</h1>
           </div>
-        }
-
-        <!-- Submit Buttons -->
-        <div class="flex gap-4">
-          <button type="submit" class="btn btn-primary flex-1" [disabled]="uploading || creating">
-            @if (uploading || creating) {
-              <span class="loading loading-spinner"></span>
-              {{ uploading ? 'Upload...' : 'Création...' }}
-            } @else {
-              <span>Créer le meme</span>
-            }
-          </button>
-          <button type="button" class="btn btn-ghost" (click)="cancel()">Annuler</button>
+          <app-notification-bell />
         </div>
-      </form>
-    </div>
+      </div>
+    </header>
+
+    <main class="container-custom py-8">
+      <div class="max-w-3xl mx-auto">
+        <form [formGroup]="memeForm" (ngSubmit)="onSubmit()">
+          
+          <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden mb-6">
+            <div class="p-6 border-b border-gray-100">
+              <h2 class="text-lg font-semibold text-gray-900">Détails du mème</h2>
+              <p class="text-sm text-gray-500">Partagez votre créativité avec le monde</p>
+            </div>
+            
+            <div class="p-6 space-y-6">
+              <!-- Upload Zone -->
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">Image</label>
+                <app-upload-zone (fileSelected)="onFileSelected($event)" />
+                @if (memeForm.get('image')?.invalid && submitted) {
+                  <p class="text-sm text-red-600 mt-2">Veuillez télécharger une image</p>
+                }
+              </div>
+
+              <!-- Title -->
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">Titre</label>
+                <input type="text" 
+                       formControlName="title"
+                       placeholder="Donnez un titre accrocheur..." 
+                       class="input-custom text-lg" />
+                @if (memeForm.get('title')?.invalid && submitted) {
+                  <p class="text-sm text-red-600 mt-1">Le titre est requis</p>
+                }
+              </div>
+
+              <!-- Tags -->
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">Tags</label>
+                <div class="grid grid-cols-2 md:grid-cols-3 gap-3">
+                  @for (tag of availableTags; track tag.id) {
+                    <label class="relative flex cursor-pointer group">
+                      <input type="checkbox" 
+                             [value]="tag.id"
+                             (change)="onTagChange($event, tag.id)"
+                             class="peer sr-only" />
+                      <div class="w-full px-4 py-2 text-sm font-medium text-gray-600 bg-gray-50 border border-gray-200 rounded-lg peer-checked:bg-blue-50 peer-checked:text-primary peer-checked:border-primary transition-all hover:bg-gray-100">
+                        #{{ tag.name }}
+                      </div>
+                    </label>
+                  }
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Error Message -->
+          @if (errorMessage) {
+            <div class="mb-6 p-4 bg-red-50 border border-red-200 rounded-lg animate-fade-in">
+              <p class="text-sm text-red-800">{{ errorMessage }}</p>
+            </div>
+          }
+
+          <!-- Actions -->
+          <div class="flex items-center justify-end gap-3">
+            <button type="button" 
+                    (click)="cancel()"
+                    class="btn-custom btn-secondary">
+              Annuler
+            </button>
+            <button type="submit" 
+                    class="btn-custom btn-primary px-8"
+                    [disabled]="uploading || creating">
+              @if (uploading || creating) {
+                <div class="spinner w-4 h-4 text-white"></div>
+                {{ uploading ? 'Envoi...' : 'Publication...' }}
+              } @else {
+                Publier le mème
+              }
+            </button>
+          </div>
+        </form>
+      </div>
+    </main>
   `
 })
 export class CreateMemeComponent {
@@ -122,6 +152,17 @@ export class CreateMemeComponent {
     this.memeForm.patchValue({ image: file ? 'selected' : '' });
   }
 
+  onTagChange(event: Event, tagId: string): void {
+    const checkbox = event.target as HTMLInputElement;
+    const currentTags = this.memeForm.get('tags')?.value as string[];
+    
+    if (checkbox.checked) {
+      this.memeForm.patchValue({ tags: [...currentTags, tagId] });
+    } else {
+      this.memeForm.patchValue({ tags: currentTags.filter(id => id !== tagId) });
+    }
+  }
+
   async onSubmit(): Promise<void> {
     this.submitted = true;
     
@@ -130,11 +171,9 @@ export class CreateMemeComponent {
     }
 
     try {
-      // 1. Upload de l'image
       this.uploading = true;
       const imageId = await this.uploadImage();
 
-      // 2. Créer le meme
       this.uploading = false;
       this.creating = true;
 
@@ -148,17 +187,18 @@ export class CreateMemeComponent {
 
       this.memeService.createMeme(memeData).subscribe({
         next: (meme) => {
-          this.router.navigate(['/meme', meme.id]);
+          this.router.navigate(['/gallery']); // Go back to gallery instead of detail for flow
         },
         error: (error) => {
           this.creating = false;
-          this.errorMessage = 'Erreur lors de la création du meme';
+          this.errorMessage = 'Erreur lors de la création du mème. Réessayez.';
           console.error('Error creating meme:', error);
         }
       });
     } catch (error) {
       this.uploading = false;
-      this.errorMessage = 'Erreur lors de l\'upload de l\'image';
+      this.creating = false;
+      this.errorMessage = "Erreur lors de l'envoi de l'image.";
       console.error('Error:', error);
     }
   }

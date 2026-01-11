@@ -9,82 +9,75 @@ import { AuthService } from '../../shared/services/auth.service';
   standalone: true,
   imports: [CommonModule, ReactiveFormsModule, RouterModule],
   template: `
-    <div class="min-h-screen flex items-center justify-center bg-base-200">
-      <div class="card w-full max-w-md bg-base-100 shadow-2xl">
-        <div class="card-body">
-          <h2 class="card-title text-3xl font-bold text-center mb-6">Meme Gallery</h2>
-          <p class="text-center opacity-70 mb-4">Connectez-vous pour continuer</p>
+    <div class="min-h-screen flex items-center justify-center bg-gray-50 py-12 px-4">
+      <div class="w-full max-w-md">
+        <!-- Header -->
+        <div class="text-center mb-8">
+          <h1 class="text-3xl font-bold text-gray-900 mb-2">Bienvenue</h1>
+          <p class="text-gray-600">Connectez-vous pour continuer</p>
+        </div>
 
+        <!-- Login Form -->
+        <div class="card-custom p-8">
           <form [formGroup]="loginForm" (ngSubmit)="onSubmit()">
             <!-- Email -->
-            <div class="form-control">
-              <label class="label">
-                <span class="label-text">Email</span>
-              </label>
+            <div class="mb-5">
+              <label class="block text-sm font-medium text-gray-700 mb-2">Email</label>
               <input type="email" 
                      formControlName="email"
-                     placeholder="votre@email.com" 
-                     class="input input-bordered" 
+                     placeholder="vous@exemple.com" 
+                     class="input-custom"
                      [class.input-error]="loginForm.get('email')?.invalid && loginForm.get('email')?.touched" />
               @if (loginForm.get('email')?.invalid && loginForm.get('email')?.touched) {
-                <label class="label">
-                  <span class="label-text-alt text-error">Email invalide</span>
-                </label>
+                <p class="text-sm text-red-600 mt-1">Veuillez entrer un email valide</p>
               }
             </div>
 
             <!-- Password -->
-            <div class="form-control mt-4">
-              <label class="label">
-                <span class="label-text">Mot de passe</span>
-              </label>
+            <div class="mb-6">
+              <label class="block text-sm font-medium text-gray-700 mb-2">Mot de passe</label>
               <input type="password" 
                      formControlName="password"
                      placeholder="••••••••" 
-                     class="input input-bordered"
+                     class="input-custom"
                      [class.input-error]="loginForm.get('password')?.invalid && loginForm.get('password')?.touched" />
               @if (loginForm.get('password')?.invalid && loginForm.get('password')?.touched) {
-                <label class="label">
-                  <span class="label-text-alt text-error">Mot de passe requis</span>
-                </label>
+                <p class="text-sm text-red-600 mt-1">Le mot de passe est requis</p>
               }
             </div>
 
             <!-- Error Message -->
             @if (errorMessage) {
-              <div class="alert alert-error mt-4">
-                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
-                </svg>
-                <span>{{ errorMessage }}</span>
+              <div class="mb-6 p-4 bg-red-50 border border-red-200 rounded-lg">
+                <p class="text-sm text-red-800">{{ errorMessage }}</p>
               </div>
             }
 
             <!-- Submit Button -->
-            <div class="form-control mt-6">
-              <button type="submit" 
-                      class="btn btn-primary" 
-                      [disabled]="loginForm.invalid || loading"
-                      [class.loading]="loading">
-                @if (loading) {
-                  <span class="loading loading-spinner"></span>
-                } @else {
-                  <span>Se connecter</span>
-                }
-              </button>
-            </div>
-          </form>
+            <button type="submit" 
+                    class="btn-custom btn-primary w-full mb-4"
+                    [disabled]="loginForm.invalid || loading">
+              @if (loading) {
+                <div class="spinner w-4 h-4"></div>
+                Connexion...
+              } @else {
+                Se connecter
+              }
+            </button>
 
-          <!-- Guest Access -->
-          <div class="divider">OU</div>
-          <button class="btn btn-ghost" (click)="continueAsGuest()">
-            Continuer en tant qu'invité
-          </button>
-          
-          <p class="text-center mt-4">
-            Pas encore de compte ? 
-            <a routerLink="/register" class="link link-primary">Créer un compte</a>
-          </p>
+            <!-- Guest Access -->
+            <button type="button"
+                    (click)="continueAsGuest()" 
+                    class="btn-custom btn-secondary w-full mb-6">
+              Continuer en tant qu'invité
+            </button>
+
+            <!-- Register Link -->
+            <p class="text-center text-sm text-gray-600">
+              Pas encore de compte ? 
+              <a routerLink="/register" class="font-medium text-primary hover:text-primary-dark ml-1">S'inscrire</a>
+            </p>
+          </form>
         </div>
       </div>
     </div>
@@ -122,7 +115,7 @@ export class LoginComponent {
       },
       error: (error) => {
         this.loading = false;
-        this.errorMessage = 'Email ou mot de passe incorrect';
+        this.errorMessage = 'Email ou mot de passe invalide';
       }
     });
   }

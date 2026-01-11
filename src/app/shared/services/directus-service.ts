@@ -19,7 +19,37 @@ export class DirectusService {
    */
   get<T>(collection: string, params?: any): Observable<ApiListResponse<T>> {
     const url = `${this.apiUrl}/${collection}`;
-    return this.http.get<ApiListResponse<T>>(url, { params });
+    const serializedParams = this.serializeParams(params);
+    return this.http.get<ApiListResponse<T>>(url, { params: serializedParams });
+  }
+
+  private serializeParams(params: any): any {
+    if (!params) return {};
+    const result: any = {};
+    
+    Object.keys(params).forEach(key => {
+      const value = params[key];
+      if (key === 'filter' && typeof value === 'object') {
+        this.flattenFilter(value, result, 'filter');
+      } else {
+        result[key] = value;
+      }
+    });
+    
+    return result;
+  }
+
+  private flattenFilter(obj: any, result: any, prefix: string) {
+    Object.keys(obj).forEach(key => {
+      const value = obj[key];
+      const newKey = `${prefix}[${key}]`;
+      
+      if (typeof value === 'object' && value !== null) {
+        this.flattenFilter(value, result, newKey);
+      } else {
+        result[newKey] = value;
+      }
+    });
   }
 
   /**

@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { BehaviorSubject, Observable, tap } from 'rxjs';
+import { BehaviorSubject, Observable, tap, map } from 'rxjs';
 import { environment } from '../../../environments/environment';
 import { User, AuthResponse, LoginCredentials } from '../interfaces/user.interface';
 
@@ -98,11 +98,51 @@ export class AuthService {
   /**
    * Sauvegarder la session
    */
+  /**
+   * Sauvegarder la session
+   */
   private setSession(authResponse: AuthResponse): void {
     localStorage.setItem('access_token', authResponse.data.access_token);
     localStorage.setItem('refresh_token', authResponse.data.refresh_token);
     localStorage.setItem('expires', authResponse.data.expires.toString());
-    // TODO: Charger les infos de l'utilisateur depuis l'API
+    
+    // Récupérer les infos de l'utilisateur
+    this.fetchCurrentUser().subscribe();
+  }
+
+  /**
+   * Récupérer l'utilisateur courant depuis l'API
+   */
+  /**
+   * Récupérer l'utilisateur courant depuis l'API
+   */
+  fetchCurrentUser(): Observable<User> {
+    return this.http.get<{ data: User }>(`${environment.directusUrl}/users/me`).pipe(
+      tap(response => {
+        const user = response.data;
+        localStorage.setItem('current_user', JSON.stringify(user));
+        this.currentUserSubject.next(user);
+      }),
+      map(response => response.data)
+    );
+  }
+
+  /**
+   * Mettre à jour l'utilisateur courant
+   */
+  updateUser(data: Partial<User>): Observable<User> {
+    return this.http.patch<{ data: User }>(`${environment.directusUrl}/users/me`, data).pipe(
+      map(response => {
+        const updatedUser = response.data;
+        // Update local storage and subject
+        const currentUser = this.currentUserSubject.value;
+        const mergedUser = { ...currentUser, ...updatedUser }; // Merge to keep other fields if partial response
+        
+        localStorage.setItem('current_user', JSON.stringify(mergedUser));
+        this.currentUserSubject.next(mergedUser);
+        return mergedUser;
+      })
+    );
   }
 
   /**
@@ -127,7 +167,22 @@ export class AuthService {
         this.currentUserSubject.next(user);
       } catch (e) {
         console.error('Error parsing user from storage', e);
+        localStorage.removeItem('current_user');
       }
+    }
+
+    // Toujours rafraîchir les données utilisateur si on a un token
+    // Cela corrige les cas où les données locales sont incomplètes ou périmées
+    if (this.getAccessToken()) {
+      this.fetchCurrentUser().subscribe({
+        error: (err) => {
+          console.error('AuthService: Failed to refresh user', err);
+          // Si on n'avait pas de user en cache et que le fetch échoue, on déconnecte
+          if (!this.currentUserSubject.value) {
+            this.logout();
+          }
+        }
+      });
     }
   }
 }
